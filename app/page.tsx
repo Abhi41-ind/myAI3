@@ -120,7 +120,7 @@ export default function Chat() {
               onClick={clearChat}
             >
               <Eraser className="size-4" />
-              Clear chat
+              Clear
             </Button>
           </ChatHeaderBlock>
         </ChatHeader>

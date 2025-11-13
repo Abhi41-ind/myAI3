@@ -17,15 +17,16 @@ export function MessageWall({ messages, status }: { messages: UIMessage[]; statu
 
     return (
         <div className="relative max-w-3xl w-full">
-            <div className="relative">
+            <div className="relative flex flex-col gap-4">
                 {messages.map((message, messageIndex) => {
                     const isLastMessage = messageIndex === messages.length - 1;
                     return (
-                        <div key={message.id} className="mb-4">
+                        <div key={message.id} className="w-full">
                             {message.role === "user" ? <UserMessage message={message} /> : <AssistantMessage message={message} status={status} isLastMessage={isLastMessage} />}
                         </div>
                     );
                 })}
+
                 <div ref={messagesEndRef} />
             </div>
         </div>
