@@ -20,7 +20,7 @@ import { ChatHeader } from "@/app/parts/chat-header";
 import { ChatHeaderBlock } from "@/app/parts/chat-header";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UIMessage } from "ai";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 const formSchema = z.object({
   message: z
@@ -32,49 +32,77 @@ const formSchema = z.object({
 // Local storage utilities
 const STORAGE_KEY = 'chat-messages';
 
-const loadMessagesFromStorage = (): UIMessage[] => {
-  if (typeof window === 'undefined') return [];
+type StorageData = {
+  messages: UIMessage[];
+  durations: Record<string, number>;
+};
+
+const loadMessagesFromStorage = (): { messages: UIMessage[]; durations: Record<string, number> } => {
+  if (typeof window === 'undefined') return { messages: [], durations: {} };
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
+    if (!stored) return { messages: [], durations: {} };
+
+    const parsed = JSON.parse(stored);
+    return {
+      messages: parsed.messages || [],
+      durations: parsed.durations || {},
+    };
   } catch (error) {
     console.error('Failed to load messages from localStorage:', error);
-    return [];
+    return { messages: [], durations: {} };
   }
 };
 
-const saveMessagesToStorage = (messages: UIMessage[]) => {
+const saveMessagesToStorage = (messages: UIMessage[], durations: Record<string, number>) => {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    const data: StorageData = { messages, durations };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch (error) {
     console.error('Failed to save messages to localStorage:', error);
   }
 };
 
-const clearMessagesFromStorage = () => {
-  if (typeof window === 'undefined') return;
-  try {
-    localStorage.removeItem(STORAGE_KEY);
-  } catch (error) {
-    console.error('Failed to clear messages from localStorage:', error);
-  }
-};
-
 export default function Chat() {
   const [isClient, setIsClient] = useState(false);
-  const [initialMessages, setInitialMessages] = useState<UIMessage[]>([]);
+  const [durations, setDurations] = useState<Record<string, number>>({});
+  const streamingStartTimeRef = useRef<number | null>(null);
+
+  // Load from storage once on mount
+  const stored = typeof window !== 'undefined' ? loadMessagesFromStorage() : { messages: [], durations: {} };
+  const [initialMessages] = useState<UIMessage[]>(stored.messages);
 
   const { messages, sendMessage, status, stop, setMessages } = useChat({
     messages: initialMessages,
+    onFinish: (event) => {
+      if (streamingStartTimeRef.current !== null) {
+        const elapsedSeconds = Math.ceil((Date.now() - streamingStartTimeRef.current) / 1000);
+        const finishedMessage = event.message;
+
+        setDurations((prevDurations) => {
+          const newDurations = { ...prevDurations };
+          finishedMessage.parts.forEach((part: any, partIndex: number) => {
+            if (part.type === "reasoning") {
+              const key = `${finishedMessage.id}-${partIndex}`;
+              newDurations[key] = elapsedSeconds;
+            }
+          });
+
+          saveMessagesToStorage(event.messages, newDurations);
+          return newDurations;
+        });
+
+        streamingStartTimeRef.current = null;
+      }
+    },
   });
 
   useEffect(() => {
     setIsClient(true);
-    const storedMessages = loadMessagesFromStorage();
-    setInitialMessages(storedMessages);
-    setMessages(storedMessages);
-  }, [setMessages]);
+    setDurations(stored.durations);
+    setMessages(stored.messages);
+  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -83,20 +111,18 @@ export default function Chat() {
     },
   });
 
-  useEffect(() => {
-    if (messages.length > 0) {
-      saveMessagesToStorage(messages);
-    }
-  }, [messages]);
-
   function onSubmit(data: z.infer<typeof formSchema>) {
+    streamingStartTimeRef.current = Date.now();
     sendMessage({ text: data.message });
     form.reset();
   }
 
   function clearChat() {
-    setMessages([]);
-    clearMessagesFromStorage();
+    const newMessages: UIMessage[] = [];
+    const newDurations = {};
+    setMessages(newMessages);
+    setDurations(newDurations);
+    saveMessagesToStorage(newMessages, newDurations);
     toast.success("Chat cleared");
   }
 
@@ -128,7 +154,7 @@ export default function Chat() {
           <div className="flex flex-col items-center justify-end min-h-full">
             {isClient ? (
               <>
-                <MessageWall messages={messages} status={status} />
+                <MessageWall messages={messages} status={status} durations={durations} />
                 {status === "submitted" && (
                   <div className="flex justify-start max-w-3xl w-full">
                     <Loader2 className="size-4 animate-spin text-muted-foreground" />
