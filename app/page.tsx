@@ -8,7 +8,6 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Field,
-  FieldError,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
@@ -30,7 +29,6 @@ const formSchema = z.object({
     .max(2000, "Message must be at most 2000 characters."),
 });
 
-// Local storage utilities
 const STORAGE_KEY = 'chat-messages';
 
 type StorageData = {
@@ -70,7 +68,6 @@ export default function Chat() {
   const [durations, setDurations] = useState<Record<string, number>>({});
   const streamingStartTimeRef = useRef<number | null>(null);
 
-  // Load from storage once on mount
   const stored = typeof window !== 'undefined' ? loadMessagesFromStorage() : { messages: [], durations: {} };
   const [initialMessages] = useState<UIMessage[]>(stored.messages);
 
