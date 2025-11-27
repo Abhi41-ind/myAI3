@@ -24,8 +24,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-     <body
-  className="bg-background text-foreground font-sans bg-[url('/Gemini_Generated_Image_tbk7r0tbk7r0tbk7.png')] bg-cover bg-center bg-no-repeat min-h-screen"
+    <body
+  style={{
+    // This points to the image you uploaded in the public folder
+    backgroundImage: `url('/Gemini_Generated_Image_tbk7r0tbk7r0tbk7.png.jpg')`,
+    // This ensures the image covers the whole screen without stretching weirdly
+    backgroundSize: 'cover',
+    // This centers the image
+    backgroundPosition: 'center',
+    // This stops the image from repeating into tiles
+    backgroundRepeat: 'no-repeat',
+    // This ensures the background takes up at least the full height of the screen
+    minHeight: '100vh',
+    // This removes default white borders around the edge of the browser
+    margin: 0,
+  }}
 >
   {children}
 </body>
