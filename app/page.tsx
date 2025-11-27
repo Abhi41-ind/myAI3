@@ -201,21 +201,27 @@ export default function Chat() {
                           Message
                         </FieldLabel>
                         <div className="relative h-13">
-                          <Input
-                            {...field}
-                            id="chat-form-message"
-                            className="h-15 pr-15 pl-5 bg-card rounded-[20px]"
-                            placeholder="Type your message here..."
-                            disabled={status === "streaming"}
-                            aria-invalid={fieldState.invalid}
-                            autoComplete="off"
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" && !e.shiftKey) {
-                                e.preventDefault();
-                                form.handleSubmit(onSubmit)();
-                              }
-                            }}
-                          />
+                         <Input
+  {...field}
+  id="chat-form-message"
+  style={{
+    height: '60px', // equivalent to h-15 (15 * 4px)
+    paddingRight: '60px', // equivalent to pr-15 (15 * 4px)
+    paddingLeft: '20px', // equivalent to pl-5 (5 * 4px)
+    backgroundColor: 'var(--card)', // assuming card is a CSS variable, otherwise use hex/rgb
+    borderRadius: '20px',
+  }}
+  placeholder="Type your message here..."
+  disabled={status === "streaming"}
+  aria-invalid={fieldState.invalid}
+  autoComplete="off"
+  onKeyDown={(e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      form.handleSubmit(onSubmit)();
+    }
+  }}
+/>
                           {(status == "ready" || status == "error") && (
                             <Button
                               className="absolute right-3 top-3 rounded-full"
