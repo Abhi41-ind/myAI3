@@ -27,7 +27,7 @@ export default function RootLayout({
     <body
   style={{
     // This points to the image you uploaded in the public folder
-    backgroundImage: `url('/background.png')`,
+    backgroundImage: `url('/background.png.jpg')`,
     // This ensures the image covers the whole screen without stretching weirdly
     backgroundSize: 'cover',
     // This centers the image
