@@ -43,7 +43,9 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-:root {
+:root {/* Replace this hex code with your actual primary/neon color from your theme */
+  --neon-primary-color: #00ffff; /* Example: Cyan/Teal */
+  --message-bg-color: rgba(20, 20, 30, 0.8); /* Example dark background with opacity */
   --radius: 0.625rem;
   --background: oklch(0.995 0 0);
   --foreground: oklch(0.145 0 0);
