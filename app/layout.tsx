@@ -24,11 +24,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${inter.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-      </body>
+     <body
+  className="bg-background text-foreground font-sans bg-[url('/Gemini_Generated_Image_tbk7r0tbk7r0tbk7.png')] bg-cover bg-center bg-no-repeat min-h-screen"
+>
+  {children}
+</body>
     </html>
   );
 }
